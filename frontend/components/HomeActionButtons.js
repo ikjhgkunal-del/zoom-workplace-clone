@@ -4,24 +4,29 @@ import { Video, Plus, Calendar, ChevronDown } from 'lucide-react';
 import { createInstantMeeting } from '@/lib/api';
 import { useState } from 'react';
 
-// Schedule button — shows the calendar date number like Zoom does
+// Schedule button — shows the calendar date badge matching Zoom exactly
 function ScheduleIcon() {
-  const day = new Date().getDate();
   return (
-    <div style={{
-      width: 56, height: 56,
-      borderRadius: '50%',
-      background: '#1976D2',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexDirection: 'column',
-      gap: 0,
-    }}>
-      <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.85)', fontWeight: 600, lineHeight: 1.2, letterSpacing: 1 }}>
-        {new Date().toLocaleDateString('en-US', { month: 'short' }).toUpperCase()}
-      </div>
-      <div style={{ fontSize: 20, color: 'white', fontWeight: 700, lineHeight: 1 }}>{day}</div>
+    <div
+      className="action-btn-icon blue-schedule"
+      style={{
+        borderRadius: '20px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
+        {/* Calendar Card White Body */}
+        <rect x="3.5" y="5.5" width="21" height="19" rx="3.5" fill="white" />
+        {/* Blue Top Header Bar */}
+        <path d="M3.5 9C3.5 7.067 5.067 5.5 7 5.5H21C22.933 5.5 24.5 7.067 24.5 9V10H3.5V9Z" fill="#0E71EB" />
+        {/* Two Top Binder Rings */}
+        <rect x="7.5" y="3" width="2.2" height="4.5" rx="1.1" fill="white" />
+        <rect x="18.3" y="3" width="2.2" height="4.5" rx="1.1" fill="white" />
+        {/* Date Number inside */}
+        <text x="14" y="20.5" textAnchor="middle" fill="#0E71EB" fontSize="10.5" fontWeight="700" fontFamily="Inter, -apple-system, sans-serif">19</text>
+      </svg>
     </div>
   );
 }
