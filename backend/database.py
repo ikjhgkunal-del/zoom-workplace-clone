@@ -3,7 +3,10 @@ import random
 import string
 from datetime import datetime, timedelta
 
+import os
+
 DB_PATH = "zoom_clone.db"
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000").rstrip("/")
 
 
 def get_db():
@@ -19,7 +22,7 @@ def generate_meeting_id():
 
 
 def generate_invite_link(meeting_id: str) -> str:
-    return f"http://localhost:3000/join?meetingId={meeting_id}"
+    return f"{FRONTEND_URL}/join?meetingId={meeting_id}"
 
 
 def init_db():
@@ -65,6 +68,26 @@ def init_db():
             allow_screen_share INTEGER DEFAULT 1,
             record_meeting INTEGER DEFAULT 0,
             FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id)
+        );
+
+        CREATE TABLE IF NOT EXISTS chat_channels (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            type TEXT DEFAULT 'meeting',
+            meeting_id TEXT,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS chat_messages (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            channel_id TEXT NOT NULL,
+            sender_name TEXT NOT NULL,
+            sender_id TEXT,
+            is_self INTEGER DEFAULT 0,
+            is_guest INTEGER DEFAULT 0,
+            text TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (channel_id) REFERENCES chat_channels(id)
         );
     """)
 
@@ -170,5 +193,35 @@ def init_db():
                 VALUES (?, ?, ?)
             """, mp)
 
+    # --- Ensure Personal Meeting ID (PMI) exists ---
+    pmi_row = cur.execute("SELECT id FROM meetings WHERE meeting_id = '629-892-4224'").fetchone()
+    if not pmi_row:
+        pmi_now = datetime.now()
+        cur.execute("""
+            INSERT INTO meetings
+            (meeting_id, title, description, host_name, host_email, start_time, end_time,
+             duration, invite_link, is_instant, status, passcode)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            "629-892-4224",
+            "My Personal Meeting ID (PMI)",
+            "Personal Meeting Room for test one",
+            "test one",
+            "testone@example.com",
+            pmi_now.isoformat(),
+            (pmi_now + timedelta(days=365)).isoformat(),
+            60,
+            "http://localhost:3000/join?meetingId=629-892-4224",
+            0,
+            "scheduled",
+            "123456"
+        ))
+        cur.execute("INSERT OR IGNORE INTO meeting_settings (meeting_id) VALUES ('629-892-4224')")
+        cur.execute("""
+            INSERT OR IGNORE INTO chat_channels (id, name, type, meeting_id)
+            VALUES ('629-892-4224', 'My Personal Meeting ID (PMI)', 'meeting', '629-892-4224')
+        """)
+
     conn.commit()
     conn.close()
+

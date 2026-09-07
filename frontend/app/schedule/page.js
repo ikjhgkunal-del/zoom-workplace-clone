@@ -2,14 +2,18 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/Sidebar';
+import TopBar from '@/components/TopBar';
 import { scheduleMeeting } from '@/lib/api';
-import { ChevronLeft } from 'lucide-react';
+import {
+  ChevronLeft, Check, Copy, AlertTriangle, Video,
+  Calendar, Clock, Shield, Globe, Settings, ExternalLink
+} from 'lucide-react';
 
-function Toggle({ id, checked, onChange }) {
+function ZmToggle({ id, checked, onChange }) {
   return (
-    <label className="toggle-switch" htmlFor={id}>
+    <label className="zm-switch" htmlFor={id}>
       <input id={id} type="checkbox" checked={checked} onChange={onChange} />
-      <span className="toggle-slider" />
+      <span className="zm-slider" />
     </label>
   );
 }
@@ -22,20 +26,25 @@ export default function SchedulePage() {
   const defaultTime = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
 
   const [form, setForm] = useState({
-    title: '',
+    title: 'My Meeting',
     description: '',
     date: defaultDate,
     time: defaultTime,
     duration: 60,
-    passcode: '',
+    timeZone: '(GMT+5:30) India Standard Time',
+    meetingIdType: 'auto', // 'auto' | 'pmi'
+    passcode: 'GWzvz3',
     waitingRoom: false,
+    hostVideo: 'off',
+    participantVideo: 'off',
     muteOnEntry: false,
     allowScreenShare: true,
-    video: 'off',
+    joinAnytime: false,
   });
 
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(null);
+  const [copied, setCopied] = useState(false);
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }));
 
@@ -44,15 +53,22 @@ export default function SchedulePage() {
     if (!form.title.trim()) return;
     setLoading(true);
     try {
-      const startTime = new Date(`${form.date}T${form.time}`);
+      const startTime = new Date(`${form.date}T${form.time}:00`);
+      const meetingId = form.meetingIdType === 'pmi' ? '629-892-4224' : null;
+
       const data = await scheduleMeeting({
-        title: form.title,
-        description: form.description,
+        title: form.title.trim(),
+        description: form.description.trim(),
         start_time: startTime.toISOString(),
         duration: Number(form.duration),
-        passcode: form.passcode,
+        passcode: form.passcode.trim(),
         host_name: 'test one',
+        meeting_id: meetingId,
+        waiting_room: form.waitingRoom,
+        mute_on_entry: form.muteOnEntry,
+        allow_screen_share: form.allowScreenShare,
       });
+
       setSuccess(data);
     } catch (err) {
       alert('Failed to schedule meeting: ' + err.message);
@@ -61,211 +77,358 @@ export default function SchedulePage() {
     }
   };
 
-  if (success) {
-    return (
-      <div className="app-layout">
-        <Sidebar />
-        <main className="main-content">
-          <div className="schedule-page">
-            <div style={{ textAlign: 'center', padding: '60px 0' }}>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>🎉</div>
-              <h2 style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>Meeting Scheduled!</h2>
-              <p style={{ color: '#6b6b6b', marginBottom: 8 }}>{success.title}</p>
-              <p style={{ color: '#6b6b6b', marginBottom: 4, fontSize: 13 }}>
-                Meeting ID: <strong>{success.meeting_id}</strong>
-              </p>
-              <p style={{ color: '#6b6b6b', marginBottom: 24, fontSize: 13 }}>
-                Invite Link: <a href={success.invite_link} style={{ color: '#0E71EB' }}>{success.invite_link}</a>
-              </p>
-              <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-                <button className="btn-primary" onClick={() => router.push('/')}>
-                  Back to Home
-                </button>
-                <button className="btn-cancel" onClick={() => setSuccess(null)}>
-                  Schedule Another
-                </button>
-              </div>
-            </div>
-          </div>
-        </main>
-      </div>
-    );
-  }
+  const getInviteUrl = () => {
+    if (!success?.meeting_id) return success?.invite_link || '';
+    if (typeof window !== 'undefined') {
+      return `${window.location.origin}/join?meetingId=${encodeURIComponent(success.meeting_id)}`;
+    }
+    return success.invite_link;
+  };
+
+  const handleCopyLink = () => {
+    const url = getInviteUrl();
+    if (!url) return;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    });
+  };
 
   return (
     <div className="app-layout">
       <Sidebar />
-      <main className="main-content">
-        <div className="schedule-page">
-          {/* Back */}
-          <button
-            className="join-back-btn"
-            style={{ marginBottom: 16, color: '#0E71EB' }}
-            onClick={() => router.push('/')}
-          >
-            <ChevronLeft size={16} />
-            Back
-          </button>
+      <div className="right-section">
+        <TopBar />
+        <main className="main-content">
+          <div className="schedule-container">
+            {/* Back Button matching real Zoom */}
+            <button
+              className="schedule-back-btn"
+              onClick={() => router.push('/meetings')}
+              id="sch-back-btn"
+            >
+              <ChevronLeft size={16} />
+              <span>Back to Meetings</span>
+            </button>
 
-          <h1 className="schedule-title">Schedule a Meeting</h1>
+            {success ? (
+              /* Success Confirmation Card */
+              <div className="schedule-success-card">
+                <div className="schedule-success-icon">
+                  <Check size={28} />
+                </div>
+                <h2 className="schedule-success-title">Meeting Scheduled Successfully!</h2>
+                <div className="schedule-success-topic">{success.title}</div>
 
-          <form onSubmit={handleSubmit}>
-            {/* Topic */}
-            <div className="form-group">
-              <label className="form-label" htmlFor="sch-title">Topic *</label>
-              <input
-                id="sch-title"
-                className="form-input"
-                placeholder="Enter meeting topic"
-                value={form.title}
-                onChange={e => set('title', e.target.value)}
-                required
-              />
-            </div>
+                <div className="schedule-success-meta">
+                  <div><strong>Meeting ID:</strong> {success.meeting_id}</div>
+                  <div><strong>Time:</strong> {new Date(success.start_time).toLocaleString()} ({success.duration} min)</div>
+                  {success.passcode && <div><strong>Passcode:</strong> {success.passcode}</div>}
+                  <div style={{ marginTop: 8, wordBreak: 'break-all' }}>
+                    <strong>Invite Link:</strong>{' '}
+                    <a href={getInviteUrl()} target="_blank" rel="noreferrer" style={{ color: '#0E71EB', textDecoration: 'underline' }}>
+                      {getInviteUrl()}
+                    </a>
+                  </div>
+                </div>
 
-            {/* Description */}
-            <div className="form-group">
-              <label className="form-label" htmlFor="sch-desc">Description (optional)</label>
-              <textarea
-                id="sch-desc"
-                className="form-input form-textarea"
-                placeholder="Describe your meeting"
-                value={form.description}
-                onChange={e => set('description', e.target.value)}
-              />
-            </div>
-
-            {/* Date & Time */}
-            <div className="form-row">
-              <div className="form-group">
-                <label className="form-label" htmlFor="sch-date">Date</label>
-                <input
-                  id="sch-date"
-                  type="date"
-                  className="form-input"
-                  value={form.date}
-                  onChange={e => set('date', e.target.value)}
-                  required
-                />
+                <div className="schedule-success-actions">
+                  <button
+                    className="schedule-cancel-btn"
+                    onClick={handleCopyLink}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                  >
+                    {copied ? <Check size={14} color="#10B981" /> : <Copy size={14} />}
+                    <span>{copied ? 'Copied Link!' : 'Copy Invite Link'}</span>
+                  </button>
+                  <button
+                    className="schedule-cancel-btn"
+                    onClick={() => router.push(`/meetings?meetingId=${success.meeting_id}`)}
+                  >
+                    View in Upcoming Meetings
+                  </button>
+                  <button
+                    className="schedule-save-btn"
+                    onClick={() => router.push(`/meeting/${success.meeting_id}`)}
+                  >
+                    Start Meeting Now
+                  </button>
+                </div>
               </div>
-              <div className="form-group">
-                <label className="form-label" htmlFor="sch-time">Time</label>
-                <input
-                  id="sch-time"
-                  type="time"
-                  className="form-input"
-                  value={form.time}
-                  onChange={e => set('time', e.target.value)}
-                  required
-                />
+            ) : (
+              /* Schedule Form */
+              <div className="schedule-card">
+                <h1 className="schedule-page-title">Schedule Meeting</h1>
+
+                <form onSubmit={handleSubmit}>
+                  {/* Topic */}
+                  <div className="schedule-field">
+                    <label className="schedule-label" htmlFor="sch-title">Topic *</label>
+                    <input
+                      id="sch-title"
+                      className="schedule-input"
+                      placeholder="My Meeting"
+                      value={form.title}
+                      onChange={e => set('title', e.target.value)}
+                      required
+                    />
+                  </div>
+
+                  {/* Description */}
+                  <div className="schedule-field">
+                    <label className="schedule-label" htmlFor="sch-desc">Description (Optional)</label>
+                    <textarea
+                      id="sch-desc"
+                      className="schedule-textarea"
+                      placeholder="Describe your meeting"
+                      value={form.description}
+                      onChange={e => set('description', e.target.value)}
+                    />
+                  </div>
+
+                  {/* When: Date & Time */}
+                  <div className="schedule-row-split">
+                    <div className="schedule-field">
+                      <label className="schedule-label" htmlFor="sch-date">When</label>
+                      <input
+                        id="sch-date"
+                        type="date"
+                        className="schedule-input"
+                        value={form.date}
+                        onChange={e => set('date', e.target.value)}
+                        required
+                      />
+                    </div>
+                    <div className="schedule-field">
+                      <label className="schedule-label" htmlFor="sch-time">Start Time</label>
+                      <input
+                        id="sch-time"
+                        type="time"
+                        className="schedule-input"
+                        value={form.time}
+                        onChange={e => set('time', e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Duration */}
+                  <div className="schedule-field">
+                    <label className="schedule-label" htmlFor="sch-duration">Duration</label>
+                    <select
+                      id="sch-duration"
+                      className="schedule-select"
+                      value={form.duration}
+                      onChange={e => set('duration', e.target.value)}
+                    >
+                      <option value={15}>15 min</option>
+                      <option value={30}>30 min</option>
+                      <option value={45}>45 min</option>
+                      <option value={60}>1 hr</option>
+                      <option value={90}>1.5 hr</option>
+                      <option value={120}>2 hr</option>
+                      <option value={180}>3 hr</option>
+                    </select>
+                  </div>
+
+                
+
+                  {/* Time Zone */}
+                  <div className="schedule-field">
+                    <label className="schedule-label" htmlFor="sch-timezone">Time Zone</label>
+                    <select
+                      id="sch-timezone"
+                      className="schedule-select"
+                      value={form.timeZone}
+                      onChange={e => set('timeZone', e.target.value)}
+                    >
+                      <option value="(GMT+5:30) India Standard Time">(GMT+5:30) India Standard Time</option>
+                      <option value="(GMT-08:00) Pacific Time (US and Canada)">(GMT-08:00) Pacific Time (US and Canada)</option>
+                      <option value="(GMT-05:00) Eastern Time (US and Canada)">(GMT-05:00) Eastern Time (US and Canada)</option>
+                      <option value="(GMT+00:00) UTC">(GMT+00:00) UTC</option>
+                      <option value="(GMT+01:00) Central European Time">(GMT+01:00) Central European Time</option>
+                    </select>
+                  </div>
+
+                  {/* Meeting ID Choice (from Real Zoom Screenshot 1) */}
+                  <div className="schedule-field">
+                    <label className="schedule-label">Meeting ID</label>
+                    <div className="schedule-radio-group">
+                      <label className="schedule-radio-label">
+                        <input
+                          type="radio"
+                          name="meetingIdType"
+                          value="auto"
+                          checked={form.meetingIdType === 'auto'}
+                          onChange={() => set('meetingIdType', 'auto')}
+                        />
+                        <span>Generate Automatically</span>
+                      </label>
+                      <label className="schedule-radio-label">
+                        <input
+                          type="radio"
+                          name="meetingIdType"
+                          value="pmi"
+                          checked={form.meetingIdType === 'pmi'}
+                          onChange={() => set('meetingIdType', 'pmi')}
+                        />
+                        <span>Personal Meeting ID 629 892 4224</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Security Section */}
+                  <div className="schedule-section-header">Security</div>
+
+                  <div className="schedule-field">
+                    <div className="schedule-toggle-row">
+                      <div className="schedule-toggle-info">
+                        <div className="schedule-toggle-title">Passcode</div>
+                        <div className="schedule-toggle-desc">Only users who have the invite link or passcode can join</div>
+                      </div>
+                      <input
+                        id="sch-passcode"
+                        className="schedule-input"
+                        style={{ width: 140 }}
+                        placeholder="Passcode"
+                        value={form.passcode}
+                        onChange={e => set('passcode', e.target.value)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="schedule-field">
+                    <div className="schedule-toggle-row">
+                      <div className="schedule-toggle-info">
+                        <div className="schedule-toggle-title">Waiting Room</div>
+                        <div className="schedule-toggle-desc">Participants join a waiting room before being admitted</div>
+                      </div>
+                      <ZmToggle
+                        id="sch-waiting-room"
+                        checked={form.waitingRoom}
+                        onChange={e => set('waitingRoom', e.target.checked)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Video Section */}
+                  <div className="schedule-section-header">Video</div>
+
+                  <div className="schedule-field">
+                    <div className="schedule-toggle-row">
+                      <div className="schedule-toggle-info">
+                        <div className="schedule-toggle-title">Host Video</div>
+                      </div>
+                      <div className="schedule-radio-group">
+                        <label className="schedule-radio-label">
+                          <input
+                            type="radio"
+                            name="hostVideo"
+                            value="on"
+                            checked={form.hostVideo === 'on'}
+                            onChange={() => set('hostVideo', 'on')}
+                          />
+                          <span>On</span>
+                        </label>
+                        <label className="schedule-radio-label">
+                          <input
+                            type="radio"
+                            name="hostVideo"
+                            value="off"
+                            checked={form.hostVideo === 'off'}
+                            onChange={() => set('hostVideo', 'off')}
+                          />
+                          <span>Off</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="schedule-field">
+                    <div className="schedule-toggle-row">
+                      <div className="schedule-toggle-info">
+                        <div className="schedule-toggle-title">Participant Video</div>
+                      </div>
+                      <div className="schedule-radio-group">
+                        <label className="schedule-radio-label">
+                          <input
+                            type="radio"
+                            name="partVideo"
+                            value="on"
+                            checked={form.participantVideo === 'on'}
+                            onChange={() => set('participantVideo', 'on')}
+                          />
+                          <span>On</span>
+                        </label>
+                        <label className="schedule-radio-label">
+                          <input
+                            type="radio"
+                            name="partVideo"
+                            value="off"
+                            checked={form.participantVideo === 'off'}
+                            onChange={() => set('participantVideo', 'off')}
+                          />
+                          <span>Off</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Meeting Options */}
+                  <div className="schedule-section-header">Meeting Options</div>
+
+                  <div className="schedule-field">
+                    <div className="schedule-toggle-row">
+                      <div className="schedule-toggle-info">
+                        <div className="schedule-toggle-title">Mute participants upon entry</div>
+                        <div className="schedule-toggle-desc">Automatically mute all attendees when they join</div>
+                      </div>
+                      <ZmToggle
+                        id="sch-mute-entry"
+                        checked={form.muteOnEntry}
+                        onChange={e => set('muteOnEntry', e.target.checked)}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="schedule-field">
+                    <div className="schedule-toggle-row">
+                      <div className="schedule-toggle-info">
+                        <div className="schedule-toggle-title">Allow participants to share screen</div>
+                        <div className="schedule-toggle-desc">Attendees can share presentation materials</div>
+                      </div>
+                      <ZmToggle
+                        id="sch-screen-share"
+                        checked={form.allowScreenShare}
+                        onChange={e => set('allowScreenShare', e.target.checked)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="schedule-actions-row">
+                    <button
+                      type="button"
+                      className="schedule-cancel-btn"
+                      onClick={() => router.push('/meetings')}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      id="sch-save-btn"
+                      className="schedule-save-btn"
+                      disabled={loading}
+                    >
+                      {loading ? 'Saving…' : 'Save'}
+                    </button>
+                  </div>
+                </form>
               </div>
-            </div>
-
-            {/* Duration */}
-            <div className="form-group">
-              <label className="form-label" htmlFor="sch-duration">Duration</label>
-              <div className="form-row">
-                <select
-                  id="sch-duration"
-                  className="form-select"
-                  value={form.duration}
-                  onChange={e => set('duration', e.target.value)}
-                >
-                  {[15, 30, 45, 60, 90, 120, 150, 180].map(d => (
-                    <option key={d} value={d}>
-                      {d >= 60 ? `${Math.floor(d / 60)} hr${d > 60 ? ` ${d % 60} min` : ''}` : `${d} min`}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Security Section */}
-            <div className="schedule-section-title">Security</div>
-
-            <div className="toggle-row">
-              <div className="toggle-info">
-                <div className="toggle-label">Passcode</div>
-                <div className="toggle-desc">Only users who have the invite link or passcode can join</div>
-              </div>
-              <input
-                id="sch-passcode"
-                className="form-input"
-                style={{ width: 140, marginLeft: 12 }}
-                placeholder="Passcode"
-                value={form.passcode}
-                onChange={e => set('passcode', e.target.value)}
-              />
-            </div>
-
-            <div className="toggle-row">
-              <div className="toggle-info">
-                <div className="toggle-label">Waiting Room</div>
-                <div className="toggle-desc">Participants join a waiting room before being admitted</div>
-              </div>
-              <Toggle
-                id="sch-waiting-room"
-                checked={form.waitingRoom}
-                onChange={e => set('waitingRoom', e.target.checked)}
-              />
-            </div>
-
-            {/* Video Section */}
-            <div className="schedule-section-title">Video</div>
-
-            <div className="toggle-row">
-              <div className="toggle-info">
-                <div className="toggle-label">Host Video</div>
-              </div>
-              <div style={{ display: 'flex', gap: 16, fontSize: 13 }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <input type="radio" name="video" value="on" checked={form.video === 'on'} onChange={() => set('video', 'on')} />
-                  On
-                </label>
-                <label style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <input type="radio" name="video" value="off" checked={form.video === 'off'} onChange={() => set('video', 'off')} />
-                  Off
-                </label>
-              </div>
-            </div>
-
-            {/* Options */}
-            <div className="schedule-section-title">Meeting Options</div>
-
-            <div className="toggle-row">
-              <div className="toggle-info">
-                <div className="toggle-label">Mute participants upon entry</div>
-              </div>
-              <Toggle
-                id="sch-mute-entry"
-                checked={form.muteOnEntry}
-                onChange={e => set('muteOnEntry', e.target.checked)}
-              />
-            </div>
-
-            <div className="toggle-row">
-              <div className="toggle-info">
-                <div className="toggle-label">Allow participants to share screen</div>
-              </div>
-              <Toggle
-                id="sch-screen-share"
-                checked={form.allowScreenShare}
-                onChange={e => set('allowScreenShare', e.target.checked)}
-              />
-            </div>
-
-            {/* Actions */}
-            <div className="schedule-actions">
-              <button type="button" className="btn-cancel" onClick={() => router.push('/')}>
-                Cancel
-              </button>
-              <button type="submit" id="sch-save-btn" className="btn-primary" disabled={loading}>
-                {loading ? 'Saving…' : 'Save'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </main>
+            )}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

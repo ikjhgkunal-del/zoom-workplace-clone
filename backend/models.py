@@ -11,6 +11,20 @@ class MeetingCreate(BaseModel):
     duration: Optional[int] = 60
     passcode: Optional[str] = ""
     host_name: Optional[str] = "test one"
+    meeting_id: Optional[str] = None
+    waiting_room: Optional[bool] = False
+    mute_on_entry: Optional[bool] = False
+    allow_screen_share: Optional[bool] = True
+
+
+
+class MeetingUpdate(BaseModel):
+    title: Optional[str] = None
+    description: Optional[str] = None
+    start_time: Optional[datetime] = None
+    duration: Optional[int] = None
+    passcode: Optional[str] = None
+
 
 
 class MeetingResponse(BaseModel):

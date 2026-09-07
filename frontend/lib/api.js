@@ -31,6 +31,12 @@ export const updateMeetingStatus = (meetingId, status) =>
     body: JSON.stringify({ status }),
   });
 
+export const updateMeeting = (meetingId, data) =>
+  apiFetch(`/meetings/${meetingId}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+
 export const deleteMeeting = (meetingId) =>
   apiFetch(`/meetings/${meetingId}`, { method: 'DELETE' });
 
@@ -46,3 +52,23 @@ export const getParticipants = (meetingId) =>
 
 export const leaveMeeting = (meetingId, participantId) =>
   apiFetch(`/meetings/${meetingId}/participants/${participantId}/leave`, { method: 'PUT' });
+
+// Team Chat
+export const getChatChannels = () =>
+  apiFetch('/api/chat/channels');
+
+export const createChatChannel = (data) =>
+  apiFetch('/api/chat/channels', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+
+export const getChatMessages = (channelId) =>
+  apiFetch(`/api/chat/channels/${channelId}/messages`);
+
+export const sendChatMessage = (channelId, data) =>
+  apiFetch(`/api/chat/channels/${channelId}/messages`, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+

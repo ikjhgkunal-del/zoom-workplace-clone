@@ -61,7 +61,11 @@ export default function HomeActionButtons() {
   const handleNewMeeting = async () => {
     setLoading(true);
     try {
-      const meeting = await createInstantMeeting('test one');
+      const hostName = localStorage.getItem('zoom_display_name') || 'test one';
+      const meeting = await createInstantMeeting(hostName);
+      // Save identity for the meeting room (WebRTC uses these)
+      sessionStorage.setItem('display_name', hostName);
+      sessionStorage.setItem('is_host', 'true');
       router.push(`/meeting/${meeting.meeting_id}`);
     } catch {
       alert('Could not create meeting. Is the backend running on port 8000?');
@@ -69,6 +73,7 @@ export default function HomeActionButtons() {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="action-buttons">
