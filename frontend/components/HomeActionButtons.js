@@ -4,7 +4,7 @@ import { Video, Plus, Calendar, ChevronDown } from 'lucide-react';
 import { createInstantMeeting } from '@/lib/api';
 import { useState } from 'react';
 
-// Schedule button — shows the calendar date badge matching Zoom exactly
+// Schedule button — shows the exact original Zoom calendar icon
 function ScheduleIcon() {
   return (
     <div
@@ -16,16 +16,39 @@ function ScheduleIcon() {
         justifyContent: 'center',
       }}
     >
-      <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
-        {/* Calendar Card White Body */}
-        <rect x="3.5" y="5.5" width="21" height="19" rx="3.5" fill="white" />
-        {/* Blue Top Header Bar */}
-        <path d="M3.5 9C3.5 7.067 5.067 5.5 7 5.5H21C22.933 5.5 24.5 7.067 24.5 9V10H3.5V9Z" fill="#0E71EB" />
-        {/* Two Top Binder Rings */}
-        <rect x="7.5" y="3" width="2.2" height="4.5" rx="1.1" fill="white" />
-        <rect x="18.3" y="3" width="2.2" height="4.5" rx="1.1" fill="white" />
-        {/* Date Number inside */}
-        <text x="14" y="20.5" textAnchor="middle" fill="#0E71EB" fontSize="10.5" fontWeight="700" fontFamily="Inter, -apple-system, sans-serif">19</text>
+      <svg width="28" height="31" viewBox="0 0 30 33" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="cal-drop-shadow" x="0" y="2" width="30" height="31" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+            <feDropShadow dx="0" dy="1.2" stdDeviation="0.8" floodColor="#000000" floodOpacity="0.12" />
+          </filter>
+        </defs>
+        {/* Solid Pure White Calendar Card */}
+        <rect x="1.5" y="4" width="27" height="26.5" rx="5" fill="#FFFFFF" filter="url(#cal-drop-shadow)" />
+
+        {/* Punch Holes for the rings */}
+        <ellipse cx="8.5" cy="8.5" rx="1.5" ry="1.8" fill="#D3D8DF" />
+        <ellipse cx="21.5" cy="8.5" rx="1.5" ry="1.8" fill="#D3D8DF" />
+
+        {/* Two Top Binder Wire Rings */}
+        <rect x="7.5" y="1" width="2" height="7.5" rx="1" fill="#FFFFFF" stroke="#E2E5E9" strokeWidth="0.4" />
+        <path d="M7.7 8.2C7.7 8.8 9.3 8.8 9.3 8.2" stroke="#8E97A4" strokeWidth="0.7" strokeLinecap="round" />
+
+        <rect x="20.5" y="1" width="2" height="7.5" rx="1" fill="#FFFFFF" stroke="#E2E5E9" strokeWidth="0.4" />
+        <path d="M20.7 8.2C20.7 8.8 22.3 8.8 22.3 8.2" stroke="#8E97A4" strokeWidth="0.7" strokeLinecap="round" />
+
+        {/* Crisp Bold Blue 19 */}
+        <text
+          x="15"
+          y="23.5"
+          textAnchor="middle"
+          fill="#0E71EB"
+          fontSize="14"
+          fontWeight="700"
+          fontFamily="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif"
+          letterSpacing="-0.5px"
+        >
+          19
+        </text>
       </svg>
     </div>
   );

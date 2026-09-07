@@ -1,4 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600&display=swap');
+
+@font-face {
+  font-family: 'Kaleko 205 Regular';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Kaleko 205 Regular'), local('Kaleko 205'), local('Kaleko205-Regular'), local('Kaleko205');
+}
 
 /* =====================
    ZOOM DESIGN TOKENS
@@ -99,7 +106,7 @@ div[data-nextjs-dev-indicator] {
    SIDEBAR — LIGHT THEME (matches Zoom exactly)
    ===================== */
 .sidebar {
-  width: var(--sidebar-width);
+  width: 86px;
   background: var(--sidebar-bg);
   border-right: none;
   display: flex;
@@ -113,32 +120,36 @@ div[data-nextjs-dev-indicator] {
 
 .sidebar-logo {
   height: var(--topbar-h);
-  padding: 0 4px;
-  width: 100%;
+  padding: 6px 0 0 14px;
+  width: max-content;
+  align-self: flex-start;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   box-sizing: border-box;
+  white-space: nowrap;
 }
 
 .sidebar-logo-text {
-  font-size: 13.5px;
-  font-weight: 700;
-  color: #18191C;
+  font-family: 'Kaleko 205 Regular', 'Kaleko 205', 'Kaleko205', 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #2D3139;
   line-height: 1;
   display: block;
-  letter-spacing: -0.5px;
+  letter-spacing: 0.1px;
 }
 
 .sidebar-logo-workplace {
-  font-size: 8.5px;
-  font-weight: 500;
-  color: #23272E;
+  font-family: var(--font), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1F2328;
   display: block;
-  letter-spacing: -0.1px;
-  line-height: 1.2;
-  margin-top: 2px;
+  letter-spacing: -0.3px;
+  line-height: 1.1;
+  margin-top: 1px;
 }
 
 .sidebar-nav {
@@ -148,7 +159,7 @@ div[data-nextjs-dev-indicator] {
   gap: 4px;
   flex: 1;
   width: 100%;
-  padding: 6px 0;
+  padding: 16px 0;
 }
 
 .sidebar-item {
@@ -156,8 +167,8 @@ div[data-nextjs-dev-indicator] {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 74px;
+  height: 58px;
   cursor: pointer;
   border-radius: 8px;
   gap: 3px;
@@ -257,7 +268,7 @@ div[data-nextjs-dev-indicator] {
    TOP BAR
    ===================== */
 .topbar {
-  height: var(--topbar-h);
+  height: 60px;
   background: var(--topbar-bg);
   border-bottom: none;
   display: flex;
@@ -308,7 +319,7 @@ div[data-nextjs-dev-indicator] {
   padding: 0 12px;
   width: 440px;
   max-width: 100%;
-  height: 30px;
+  height: 34px;
   cursor: text;
   box-sizing: border-box;
 }
@@ -392,14 +403,14 @@ div[data-nextjs-dev-indicator] {
 
 .clock-time {
   font-size: 52px;
-  font-weight: 350;
+  font-weight: 450;
   color: #18191C;
   letter-spacing: -1.5px;
   line-height: 1;
 }
 
 .clock-date {
-  font-size: 13.5px;
+  font-size: 18px;
   color: #6B7280;
   margin-top: 6px;
   font-weight: 400;
@@ -427,7 +438,7 @@ div[data-nextjs-dev-indicator] {
 .action-btn-icon {
   width: 56px;
   height: 56px;
-  border-radius: 50%; /* CIRCLE for New Meeting and Join */
+  border-radius: 20px; /* CIRCLE for New Meeting and Join */
   display: flex;
   align-items: center;
   justify-content: center;
