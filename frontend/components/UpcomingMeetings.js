@@ -109,24 +109,28 @@ export default function UpcomingMeetings() {
         </div>
       ) : (
         filtered.map((m) => (
-          <div
-            key={m.meeting_id}
-            className="meeting-item"
-            id={`meeting-${m.meeting_id}`}
-            onClick={() => router.push(`/join?meetingId=${m.meeting_id}`)}
-          >
-            <div className="meeting-item-icon">
-              <Video size={14} color="#0E71EB" />
-            </div>
-            <div className="meeting-item-info">
-              <div className="meeting-item-title">{m.title}</div>
-              <div className="meeting-item-date">
-                {formatDateShort(m.start_time)}, {formatTime(m.start_time)}–{formatTime(m.end_time)}
+          <div key={m.meeting_id}>
+            <div
+              className="meeting-item"
+              id={`meeting-${m.meeting_id}`}
+              onClick={() => router.push(`/join?meetingId=${m.meeting_id}`)}
+            >
+              <div className="meeting-item-icon">
+                <Video size={13} color="#0E71EB" />
               </div>
-              <div className="meeting-item-host">Host: {m.host_name}</div>
-            </div>
-            <div className="meeting-item-dots">
-              <MoreHorizontal size={15} />
+              <div className="meeting-item-info">
+                <div className="meeting-item-title">{m.title}</div>
+                <div className="meeting-item-time">
+                  {formatTime(m.start_time)}–{formatTime(m.end_time)}
+                </div>
+                <div className="meeting-item-date">
+                  {formatDateShort(m.start_time)}
+                </div>
+                <div className="meeting-item-host">Host: {m.host_name}</div>
+              </div>
+              <div className="meeting-item-dots">
+                <MoreHorizontal size={15} />
+              </div>
             </div>
           </div>
         ))

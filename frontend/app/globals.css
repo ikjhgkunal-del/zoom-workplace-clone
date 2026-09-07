@@ -99,8 +99,8 @@ input, textarea, select { font-family: var(--font); }
 }
 
 .sidebar-logo {
-  padding: 14px 8px 10px;
-  text-align: center;
+  padding: 12px 8px 8px;
+  text-align: left;
   width: 100%;
   display: flex;
   align-items: center;
@@ -108,20 +108,21 @@ input, textarea, select { font-family: var(--font); }
 }
 
 .sidebar-logo-text {
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   color: #0E71EB;
-  line-height: 1.1;
+  line-height: 1;
   display: block;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.5px;
 }
 
 .sidebar-logo-workplace {
-  font-size: 8px;
-  font-weight: 500;
+  font-size: 7.5px;
+  font-weight: 400;
   color: #0E71EB;
   display: block;
   letter-spacing: 0;
+  line-height: 1.4;
 }
 
 .sidebar-nav {
@@ -372,7 +373,7 @@ input, textarea, select { font-family: var(--font); }
 
 .clock-date {
   font-size: 14px;
-  color: var(--text-secondary);
+  color: var(--zoom-orange);
   margin-top: 6px;
   font-weight: 400;
 }
@@ -548,7 +549,7 @@ input, textarea, select { font-family: var(--font); }
 .meeting-item-icon {
   width: 28px;
   height: 28px;
-  border-radius: 6px;
+  border-radius: 50%;
   background: var(--zoom-blue-light);
   display: flex;
   align-items: center;
@@ -571,19 +572,27 @@ input, textarea, select { font-family: var(--font); }
 
 .meeting-item-time {
   font-size: 12px;
+  color: var(--zoom-blue);
+  font-weight: 500;
+  margin-bottom: 1px;
+}
+
+.meeting-item-time {
+  font-size: 12px;
   color: #0E71EB;
   font-weight: 500;
 }
 
 .meeting-item-date {
   font-size: 11px;
-  color: var(--text-muted);
+  color: var(--zoom-blue);
   margin-bottom: 1px;
 }
 
 .meeting-item-host {
   font-size: 11px;
   color: var(--zoom-blue);
+  opacity: 0.75;
 }
 
 .meeting-item-dots {

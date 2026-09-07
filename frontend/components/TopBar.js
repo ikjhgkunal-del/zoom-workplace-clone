@@ -24,10 +24,9 @@ export default function TopBar() {
           <input
             id="topbar-search-input"
             type="text"
-            placeholder="Search (Ctrl+E)"
+            placeholder="Search Ctrl+K"
             readOnly
           />
-          <span style={{ fontSize: 11, color: '#bbb', whiteSpace: 'nowrap' }}>Ctrl+E</span>
         </div>
       </div>
 
