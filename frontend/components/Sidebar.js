@@ -2,22 +2,15 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  Home,
-  Users,
-  MessageSquare,
-  Grid3X3,
-  MoreHorizontal,
-  Settings,
-  Plus,
-  Video,
+  Home, Video, MessageSquare, MoreHorizontal,
+  Settings, Sparkles, LayoutGrid, Plus,
 } from 'lucide-react';
 
 const NAV_ITEMS = [
-  { id: 'home',     icon: Home,           label: 'Home',      href: '/' },
-  { id: 'meetings', icon: Video,          label: 'Meetings',  href: '/meetings' },
-  { id: 'chat',     icon: MessageSquare,  label: 'Chat',      href: '/chat' },
-  { id: 'hub',      icon: Grid3X3,        label: 'Hub',       href: '/hub' },
-  { id: 'more',     icon: MoreHorizontal, label: 'More',      href: '/more' },
+  { id: 'home',     icon: Home,          label: 'Home',      href: '/' },
+  { id: 'meetings', icon: Video,         label: 'Meetings',  href: '/meetings' },
+  { id: 'chat',     icon: MessageSquare, label: 'Chat',      href: '/chat' },
+  { id: 'more',     icon: MoreHorizontal,label: 'More',      href: '#' },
 ];
 
 export default function Sidebar() {
@@ -29,40 +22,39 @@ export default function Sidebar() {
       <div className="sidebar-logo">
         <div>
           <span className="sidebar-logo-text">zoom</span>
-          <span className="sidebar-logo-sub">Workplace</span>
+          <span className="sidebar-logo-workplace">Workplace</span>
         </div>
       </div>
 
-      {/* Navigation */}
+      {/* Nav */}
       <nav className="sidebar-nav">
         {NAV_ITEMS.map(({ id, icon: Icon, label, href }) => {
-          const isActive = pathname === href || (href !== '/' && pathname.startsWith(href));
+          const isActive =
+            href === '/' ? pathname === '/' : pathname.startsWith(href) && href !== '#';
           return (
             <Link
               key={id}
-              href={href}
+              href={href === '#' ? '/' : href}
+              id={`sidebar-${id}`}
               className={`sidebar-item${isActive ? ' active' : ''}`}
             >
-              <Icon size={20} />
+              <Icon size={20} strokeWidth={isActive ? 2 : 1.75} />
               <span className="sidebar-label">{label}</span>
             </Link>
           );
         })}
-
-        {/* New Button */}
-        <div className="sidebar-new-btn">
-          <Plus size={16} color="#aaa" />
-          <span className="sidebar-new-chip">New</span>
-        </div>
       </nav>
 
       {/* Bottom */}
       <div className="sidebar-bottom">
-        <Link href="/settings" className="sidebar-item">
-          <Settings size={20} />
+        <Link href="/settings" className="sidebar-item" id="sidebar-settings">
+          <Settings size={20} strokeWidth={1.75} />
           <span className="sidebar-label">Settings</span>
         </Link>
-        <div className="sidebar-avatar" title="test one">T</div>
+        <div className="sidebar-avatar" title="test one">
+          t
+          <span className="sidebar-avatar-dot" />
+        </div>
       </div>
     </aside>
   );
