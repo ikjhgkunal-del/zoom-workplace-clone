@@ -5,7 +5,7 @@ import Sidebar from '@/components/Sidebar';
 import TopBar from '@/components/TopBar';
 import {
   ChevronDown, ChevronRight, Settings, Plus,
-  AtSign, MessageSquare, MoreHorizontal, Calendar,
+  AtSign, MessageSquare, MessagesSquare, MoreHorizontal, Calendar,
   Star, Video, Users, PanelRight, Send, Smile, Paperclip,
   Type, Camera, X, Hash
 } from 'lucide-react';
@@ -379,7 +379,9 @@ export default function ChatPage() {
                     {/* Dynamic messages or empty state */}
                     {messages.length === 0 ? (
                       <div style={{ textAlign: 'center', color: '#8E8E93', margin: '60px auto', fontSize: 13, lineHeight: 1.6 }}>
-                        <div style={{ fontSize: 32, marginBottom: 12 }}>💬</div>
+                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+                          <MessageSquare size={36} color="#0E71EB" strokeWidth={1.75} />
+                        </div>
                         <strong style={{ fontSize: 15, color: '#18191C' }}>
                           {activeChannel.type === 'meeting'
                             ? `Welcome to ${activeChannel.name}!`
@@ -505,7 +507,9 @@ export default function ChatPage() {
                 textAlign: 'center',
                 padding: 32
               }}>
-                <div style={{ fontSize: 48, marginBottom: 12 }}>💬</div>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 16 }}>
+                  <MessagesSquare size={52} color="#8E97A4" strokeWidth={1.5} />
+                </div>
                 <div style={{ fontSize: 16, fontWeight: 600, color: '#18191C', marginBottom: 6 }}>
                   No chats yet
                 </div>

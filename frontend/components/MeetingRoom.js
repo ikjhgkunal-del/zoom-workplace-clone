@@ -5,7 +5,7 @@ import {
   Mic, MicOff, Video, VideoOff, Users, MessageSquare,
   Heart, MonitorUp, MonitorOff, MoreHorizontal, PhoneOff, X, Send,
   Sliders, ChevronUp, ChevronDown, ShieldCheck, Sparkles, LayoutGrid,
-  Maximize2, Minimize2, Copy, Check, Info
+  Maximize2, Minimize2, Copy, Check, Info, Paperclip, Smile
 } from 'lucide-react';
 import { updateMeetingStatus, sendChatMessage, getChatMessages } from '@/lib/api';
 import { WebRTCManager } from '@/lib/webrtc';
@@ -166,8 +166,14 @@ function VideoTile({
 }
 
 /* ─── Main MeetingRoom Component ─────────────────── */
-const WS_BASE = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000')
-  .replace(/^http/, 'ws');
+function getWsBase() {
+  if (typeof window !== 'undefined') {
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      return window.location.origin.replace(/^http/, 'ws');
+    }
+  }
+  return (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000').replace(/^http/, 'ws');
+}
 
 export default function MeetingRoom({ meetingId, meeting, displayName, userId }) {
   const router   = useRouter();
@@ -227,7 +233,7 @@ export default function MeetingRoom({ meetingId, meeting, displayName, userId })
       meetingId,
       userId,
       displayName,
-      wsBase: WS_BASE,
+      wsBase: getWsBase(),
       onStreamsUpdate: (streams) => setRemoteStreams({ ...streams }),
       onPeersUpdate:  (p)       => setPeers({ ...p }),
       onChatMessage:  (msg)     => {
@@ -448,7 +454,7 @@ export default function MeetingRoom({ meetingId, meeting, displayName, userId })
         alignItems: 'center', justifyContent: 'center',
         color: 'white', gap: 16, fontFamily: 'Inter, sans-serif', padding: 24,
       }}>
-        <div style={{ fontSize: 40 }}>🎥</div>
+        <VideoOff size={44} color="#E02828" strokeWidth={1.75} />
         <div style={{ fontSize: 18, fontWeight: 600 }}>Camera / Microphone Access Required</div>
         <p style={{ color: '#aaa', fontSize: 13, maxWidth: 360, textAlign: 'center', lineHeight: 1.6 }}>
           Please allow camera and microphone permissions in your browser settings and refresh the page.
@@ -936,7 +942,7 @@ export default function MeetingRoom({ meetingId, meeting, displayName, userId })
               </div>
               {chatMessages.length === 0 && (
                 <div className="chat-empty-state">
-                  No messages yet.<br />Say hello! 👋
+                  No messages yet.<br />Say hello to the group!
                 </div>
               )}
               {chatMessages.map((msg, i) => (
@@ -976,8 +982,8 @@ export default function MeetingRoom({ meetingId, meeting, displayName, userId })
                 <div className="chat-textarea-footer">
                   <div className="chat-toolbar-icons">
                     <span className="chat-tool-icon" title="Formatting">Aa</span>
-                    <span className="chat-tool-icon" title="Attach file">📎</span>
-                    <span className="chat-tool-icon" title="Emoji">😊</span>
+                    <span className="chat-tool-icon" title="Attach file"><Paperclip size={14} /></span>
+                    <span className="chat-tool-icon" title="Emoji"><Smile size={14} /></span>
                   </div>
                   <button className="chat-submit-plane-btn" onClick={sendChat} id="chat-send-btn" title="Send">
                     <Send size={14} />
