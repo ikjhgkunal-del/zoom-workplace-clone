@@ -1,7 +1,19 @@
 'use client';
-import { Search, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Clock, Sun, Moon } from 'lucide-react';
+import { useProfile } from '@/lib/useProfile';
 
 export default function TopBar() {
+  const { name, isDark, toggleTheme, setShowSetup } = useProfile();
+
+  const displayName = name || 'User';
+  const initials = displayName
+    .trim()
+    .split(/\s+/)
+    .map(w => w[0])
+    .join('')
+    .slice(0, 2)
+    .toLowerCase();
+
   return (
     <header className="topbar">
       {/* Centered Cluster: Nav buttons + Search bar */}
@@ -29,15 +41,31 @@ export default function TopBar() {
         </div>
       </div>
 
-      {/* Right side: Upgrade + Avatar */}
+      {/* Right side: Theme toggle + Avatar */}
       <div className="topbar-right">
-        <button className="topbar-upgrade-btn" id="topbar-upgrade-btn">
-          Upgrade
+        {/* Dark/Light Mode Toggle */}
+        <button
+          id="topbar-theme-toggle"
+          className="topbar-theme-btn"
+          onClick={toggleTheme}
+          title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          aria-label="Toggle theme"
+        >
+          {isDark ? <Sun size={16} /> : <Moon size={16} />}
         </button>
-        <div className="topbar-avatar" title="test one">
-          t
+
+        {/* Avatar — click to edit name */}
+        <div
+          className="topbar-avatar"
+          title={`${displayName} — Click to edit profile`}
+          onClick={() => setShowSetup(true)}
+          style={{ cursor: 'pointer' }}
+          id="topbar-avatar"
+        >
+          {initials}
         </div>
       </div>
     </header>
   );
 }
+
