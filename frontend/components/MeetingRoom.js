@@ -5,7 +5,8 @@ import {
   Mic, MicOff, Video, VideoOff, Users, MessageSquare,
   Heart, MonitorUp, MonitorOff, MoreHorizontal, PhoneOff, X, Send,
   Sliders, ChevronUp, ChevronDown, ShieldCheck, Sparkles, LayoutGrid,
-  Maximize2, Minimize2, Copy, Check, Info, Paperclip, Smile
+  Maximize2, Minimize2, Copy, Check, Info, Paperclip, Smile,
+  Hand, Keyboard, Wifi
 } from 'lucide-react';
 import { updateMeetingStatus, sendChatMessage, getChatMessages } from '@/lib/api';
 import { WebRTCManager } from '@/lib/webrtc';
@@ -207,6 +208,10 @@ export default function MeetingRoom({ meetingId, meeting, displayName, userId })
   const [permError,      setPermError]      = useState(null);
   const [connecting,     setConnecting]     = useState(true);
   const [isFullscreen,   setIsFullscreen]   = useState(false);
+  const [handRaised,     setHandRaised]     = useState(false);       // NEW: Raise Hand
+  const [raisedHands,    setRaisedHands]    = useState(new Set());   // NEW: peer IDs with raised hands
+  const [showShortcuts,  setShowShortcuts]  = useState(false);       // NEW: keyboard shortcuts overlay
+  const [connQuality,    setConnQuality]    = useState('good');      // NEW: 'good' | 'fair' | 'poor'
 
   /* ── Close popups on outside click ── */
   useEffect(() => {
@@ -224,6 +229,48 @@ export default function MeetingRoom({ meetingId, meeting, displayName, userId })
     document.addEventListener('mousedown', handleDocumentClick);
     return () => document.removeEventListener('mousedown', handleDocumentClick);
   }, [showParticipantsMenu, showMeetingInfo, showReactions]);
+
+  /* ── Keyboard Shortcuts ── */
+  useEffect(() => {
+    const handleKey = (e) => {
+      // Only fire if not typing in an input/textarea
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+      if (e.altKey && e.key === 'a') { e.preventDefault(); handleMute(); }
+      if (e.altKey && e.key === 'v') { e.preventDefault(); handleVideo(); }
+      if (e.altKey && e.key === 's') { e.preventDefault(); handleScreenShare(); }
+      if (e.altKey && e.key === 'h') { e.preventDefault(); handleRaiseHand(); }
+      if (e.key === '?' && !e.altKey && !e.ctrlKey) { setShowShortcuts(v => !v); }
+      if (e.key === 'Escape') { setShowShortcuts(false); setShowEndModal(false); }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, []);
+
+  /* ── Connection Quality Monitor ── */
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const pc = rtcRef.current?.peerConnections;
+        if (!pc || Object.keys(pc).length === 0) return;
+        const [[, conn]] = Object.entries(pc);
+        if (!conn) return;
+        const stats = await conn.getStats();
+        let rtt = 0, lost = 0, total = 0;
+        stats.forEach(r => {
+          if (r.type === 'remote-inbound-rtp') {
+            rtt = r.roundTripTime || 0;
+            lost += r.packetsLost || 0;
+            total += (r.packetsReceived || 0) + (r.packetsLost || 0);
+          }
+        });
+        const lossRate = total > 0 ? lost / total : 0;
+        if (rtt < 0.15 && lossRate < 0.03) setConnQuality('good');
+        else if (rtt < 0.4 && lossRate < 0.1) setConnQuality('fair');
+        else setConnQuality('poor');
+      } catch { /* ignore */ }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   /* ── Mount: init WebRTC ── */
   useEffect(() => {
@@ -424,6 +471,17 @@ export default function MeetingRoom({ meetingId, meeting, displayName, userId })
     }
   }, [showToastMsg]);
 
+  /* ── Raise Hand ── */
+  const handleRaiseHand = useCallback(() => {
+    setHandRaised(prev => {
+      const next = !prev;
+      // Broadcast raise hand via chat message (hacky but effective without extra signaling)
+      rtcRef.current?.sendChat(next ? `__RAISE_HAND__${userId}` : `__LOWER_HAND__${userId}`);
+      showToastMsg(next ? '✋ You raised your hand' : 'Hand lowered');
+      return next;
+    });
+  }, [userId, showToastMsg]);
+
   /* ── Reaction trigger ── */
   const triggerReaction = useCallback((emoji) => {
     const id = Date.now() + Math.random();
@@ -514,6 +572,34 @@ export default function MeetingRoom({ meetingId, meeting, displayName, userId })
         </div>
       )}
 
+      {/* ── Keyboard Shortcuts Overlay ── */}
+      {showShortcuts && (
+        <div className="shortcuts-overlay" onClick={() => setShowShortcuts(false)}>
+          <div className="shortcuts-modal" onClick={e => e.stopPropagation()}>
+            <div className="shortcuts-header">
+              <Keyboard size={18} />
+              <span>Keyboard Shortcuts</span>
+              <button className="shortcuts-close" onClick={() => setShowShortcuts(false)}><X size={14} /></button>
+            </div>
+            <div className="shortcuts-list">
+              {[
+                { key: 'Alt + A', action: 'Mute / Unmute' },
+                { key: 'Alt + V', action: 'Start / Stop Video' },
+                { key: 'Alt + S', action: 'Start / Stop Screen Share' },
+                { key: 'Alt + H', action: 'Raise / Lower Hand' },
+                { key: '?',       action: 'Show / Hide Shortcuts' },
+                { key: 'Esc',     action: 'Close modals' },
+              ].map(({ key, action }) => (
+                <div key={key} className="shortcut-row">
+                  <kbd className="shortcut-key">{key}</kbd>
+                  <span className="shortcut-action">{action}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── Floating Reaction Emojis ── */}
       <div className="floating-reactions-layer">
         {activeReactions.map(r => (
@@ -526,6 +612,36 @@ export default function MeetingRoom({ meetingId, meeting, displayName, userId })
       {/* ── Top Bar (Exact Zoom Workplace Meeting Style) ── */}
       <div className="room-topbar">
         <div className="room-topbar-left">
+          {/* Info Button + Meeting Title */}
+          <div
+            className="meeting-title-wrap"
+            onClick={() => setShowMeetingInfo(v => !v)}
+            title="Meeting information"
+          >
+            <button
+              id="meeting-info-trigger"
+              className="meeting-info-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowMeetingInfo(v => !v);
+              }}
+              title="Meeting information"
+            >
+              <Info size={15} />
+            </button>
+            <span className="room-meeting-title">{meetingTitle}</span>
+          </div>
+
+          {/* Raise hand badge in topbar if raised */}
+          {handRaised && (
+            <span className="topbar-hand-badge" title="Your hand is raised">
+              ✋ Hand Raised
+            </span>
+          )}
+        </div>
+
+        {/* Right side: Connection quality + timer + shortcuts + fullscreen */}
+        <div className="room-topbar-right">
           {/* Info Button + Meeting Title */}
           <div
             className="meeting-title-wrap"
@@ -828,8 +944,21 @@ export default function MeetingRoom({ meetingId, meeting, displayName, userId })
                 <span>Zoom AI</span>
               </button>
 
+              {/* NEW: 8. Raise Hand */}
+              <button
+                id="ctrl-raise-hand"
+                className={`ctrl-btn${handRaised ? ' active-ctrl hand-raised-btn' : ''}`}
+                onClick={handleRaiseHand}
+                title={handRaised ? 'Lower Hand (Alt+H)' : 'Raise Hand (Alt+H)'}
+              >
+                <div className="ctrl-btn-icon">
+                  <Hand size={19} color={handRaised ? '#FCD34D' : 'white'} />
+                </div>
+                <span>{handRaised ? 'Lower Hand' : 'Raise Hand'}</span>
+              </button>
+
               {/* 9. More */}
-              <button id="ctrl-more" className="ctrl-btn">
+              <button id="ctrl-more" className="ctrl-btn" onClick={() => setShowShortcuts(v => !v)} title="Keyboard shortcuts (?)">
                 <div className="ctrl-btn-icon">
                   <MoreHorizontal size={19} color="white" />
                 </div>
@@ -837,8 +966,14 @@ export default function MeetingRoom({ meetingId, meeting, displayName, userId })
               </button>
             </div>
 
-            {/* Zone 3: Right-aligned End Meeting Button */}
+            {/* Zone 3: Right-aligned End Meeting Button + Connection Quality */}
             <div className="ctrl-right-group">
+              {/* Connection Quality Indicator */}
+              <div className="conn-quality" title={`Connection: ${connQuality}`}>
+                <div className={`conn-bar ${connQuality !== 'poor' ? 'active' : 'dim'}`} style={{ height: 6 }} />
+                <div className={`conn-bar ${connQuality === 'good' || connQuality === 'fair' ? 'active' : 'dim'}`} style={{ height: 10 }} />
+                <div className={`conn-bar ${connQuality === 'good' ? 'active' : 'dim'}`} style={{ height: 14 }} />
+              </div>
               <button
                 id="ctrl-end"
                 className="ctrl-end-btn"

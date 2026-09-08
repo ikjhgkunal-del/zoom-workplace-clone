@@ -1,8 +1,10 @@
 'use client';
 import { useRouter } from 'next/navigation';
-import { Video, Plus, Calendar, ChevronDown } from 'lucide-react';
+import { Video, Plus, Calendar, ChevronDown, Copy, Check } from 'lucide-react';
 import { createInstantMeeting } from '@/lib/api';
 import { useState } from 'react';
+import { toast } from '@/components/Toast';
+import { getStoredName } from '@/lib/useProfile';
 
 // Schedule button — shows the exact original Zoom calendar icon
 function ScheduleIcon() {
@@ -57,18 +59,39 @@ function ScheduleIcon() {
 export default function HomeActionButtons() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [copiedId, setCopiedId] = useState(null);
 
   const handleNewMeeting = async () => {
     setLoading(true);
     try {
-      const hostName = localStorage.getItem('zoom_display_name') || 'test one';
+      const hostName = getStoredName();
       const meeting = await createInstantMeeting(hostName);
       // Save identity for the meeting room (WebRTC uses these)
       sessionStorage.setItem('display_name', hostName);
       sessionStorage.setItem('is_host', 'true');
+
+      // Show copy-link toast before navigating
+      const inviteUrl = `${window.location.origin}/join?meetingId=${encodeURIComponent(meeting.meeting_id)}`;
+      toast(
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          Meeting created!{' '}
+          <button
+            style={{ background: 'none', border: '1px solid currentColor', borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 12 }}
+            onClick={() => {
+              navigator.clipboard.writeText(inviteUrl);
+              toast('Invite link copied!', 'success', 2000);
+            }}
+          >
+            Copy Link
+          </button>
+        </span>,
+        'success',
+        4000
+      );
+
       router.push(`/meeting/${meeting.meeting_id}`);
     } catch {
-      alert('Could not create meeting. Is the backend running on port 8000?');
+      toast('Could not create meeting. Is the backend running?', 'error');
     } finally {
       setLoading(false);
     }

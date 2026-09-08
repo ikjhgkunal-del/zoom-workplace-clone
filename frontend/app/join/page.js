@@ -7,6 +7,8 @@ import {
 } from 'lucide-react';
 import { getMeeting, joinMeeting } from '@/lib/api';
 import { createFallbackCanvasTrack } from '@/lib/webrtc';
+import { toast } from '@/components/Toast';
+import { getStoredName } from '@/lib/useProfile';
 
 function JoinForm() {
   const router = useRouter();
@@ -14,7 +16,7 @@ function JoinForm() {
   const prefillId = params.get('meetingId') || '';
 
   const [meetingId, setMeetingId] = useState(prefillId);
-  const [name, setName] = useState('test one');
+  const [name, setName] = useState('');
   const [rememberName, setRememberName] = useState(true);
   const [muted, setMuted] = useState(false);
   const [videoOff, setVideoOff] = useState(false);
@@ -33,7 +35,7 @@ function JoinForm() {
   }, [prefillId]);
 
   useEffect(() => {
-    const saved = localStorage.getItem('zoom_display_name');
+    const saved = getStoredName();
     if (saved) setName(saved);
   }, []);
 
@@ -176,13 +178,14 @@ function JoinForm() {
 
   const handleJoin = async (e) => {
     e.preventDefault();
-    if (!meetingId.trim()) { setError('Please enter a Meeting ID'); return; }
+    const cleanId = meetingId.replace(/\s+/g, '').trim();
+    if (!cleanId) { setError('Please enter a Meeting ID'); return; }
     if (!name.trim()) { setError('Please enter your name'); return; }
     setError('');
     setLoading(true);
     try {
-      await getMeeting(meetingId.trim());
-      await joinMeeting(meetingId.trim(), name.trim(), false);
+      await getMeeting(cleanId);
+      await joinMeeting(cleanId, name.trim(), false);
       // Persist name for future sessions
       if (rememberName) localStorage.setItem('zoom_display_name', name.trim());
       // Save for the meeting room (used by WebRTC)
@@ -196,12 +199,26 @@ function JoinForm() {
         previewStream.getTracks().forEach(t => t.stop());
       }
 
-      router.push(`/meeting/${meetingId.trim()}`);
+      router.push(`/meeting/${cleanId}`);
     } catch (err) {
-      setError(err.message || 'Meeting not found. Check the ID and try again.');
+      const msg = err.message || 'Meeting not found. Check the ID and try again.';
+      setError(msg);
+      toast(msg, 'error');
     } finally {
       setLoading(false);
     }
+  };
+
+  // Auto-format meeting ID with spaces: 123 456 7890
+  const handleMeetingIdChange = (e) => {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 11);
+    let formatted = digits;
+    if (digits.length > 3 && digits.length <= 6) {
+      formatted = `${digits.slice(0, 3)} ${digits.slice(3)}`;
+    } else if (digits.length > 6) {
+      formatted = `${digits.slice(0, 3)} ${digits.slice(3, 7)} ${digits.slice(7)}`;
+    }
+    setMeetingId(formatted);
   };
 
   const handleBack = () => {
@@ -345,9 +362,10 @@ function JoinForm() {
           <input
             id="join-meeting-id"
             className="join-form-input"
-            placeholder="Enter Meeting ID or Invite Link"
+            placeholder="123 456 7890"
             value={meetingId}
-            onChange={e => setMeetingId(e.target.value)}
+            onChange={handleMeetingIdChange}
+            inputMode="numeric"
             required
           />
 

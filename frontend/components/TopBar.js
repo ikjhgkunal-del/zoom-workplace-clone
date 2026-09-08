@@ -1,7 +1,19 @@
 'use client';
 import { Search, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
+import { useProfile } from '@/lib/useProfile';
 
 export default function TopBar() {
+  const { name, setShowSetup } = useProfile();
+
+  const displayName = name || 'User';
+  const initials = displayName
+    .trim()
+    .split(/\s+/)
+    .map(w => w[0])
+    .join('')
+    .slice(0, 2)
+    .toLowerCase();
+
   return (
     <header className="topbar">
       {/* Centered Cluster: Nav buttons + Search bar */}
@@ -29,15 +41,20 @@ export default function TopBar() {
         </div>
       </div>
 
-      {/* Right side: Upgrade + Avatar */}
+      {/* Right side: Avatar */}
       <div className="topbar-right">
-        <button className="topbar-upgrade-btn" id="topbar-upgrade-btn">
-          Upgrade
-        </button>
-        <div className="topbar-avatar" title="test one">
-          t
+        {/* Avatar — click to edit name */}
+        <div
+          className="topbar-avatar"
+          title={`${displayName} — Click to edit profile`}
+          onClick={() => setShowSetup(true)}
+          style={{ cursor: 'pointer' }}
+          id="topbar-avatar"
+        >
+          {initials}
         </div>
       </div>
     </header>
   );
 }
+

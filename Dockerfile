@@ -61,7 +61,7 @@ COPY --from=frontend-builder /app/frontend/public ./frontend/public
 
 # Copy Entrypoint Script
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 
 # Environment Defaults
 ENV PORT=3000
