@@ -5,7 +5,7 @@ import MeetingRoom from '@/components/MeetingRoom';
 import Sidebar from '@/components/Sidebar';
 import TopBar from '@/components/TopBar';
 import { useRouter } from 'next/navigation';
-import { Video } from 'lucide-react';
+import { Video, AlertTriangle } from 'lucide-react';
 
 /* Generate or retrieve a stable UUID for this browser session */
 function getOrCreateUserId() {
@@ -133,7 +133,7 @@ export default function MeetingPage({ params }) {
         alignItems: 'center', justifyContent: 'center',
         color: 'white', gap: 16, fontFamily: 'Inter, sans-serif',
       }}>
-        <div style={{ fontSize: 48 }}>⚠️</div>
+        <AlertTriangle size={52} color="#E02828" strokeWidth={1.75} />
         <div style={{ fontSize: 18, fontWeight: 600 }}>{error}</div>
         <button
           style={{ color: '#0E71EB', background: 'none', border: 'none', cursor: 'pointer', fontSize: 14 }}

@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import os
 
 DB_PATH = "zoom_clone.db"
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:3000").rstrip("/")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://kunalmujoo.dpdns.org").rstrip("/")
 
 
 def get_db():

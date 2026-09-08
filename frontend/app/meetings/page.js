@@ -166,7 +166,7 @@ function MeetingsPageContent() {
     if (e) e.stopPropagation();
     const text = getInviteText(meeting || currentMeeting);
     navigator.clipboard.writeText(text).then(() => {
-      showToast('✓ Invite link has been copied to the clipboard.');
+      showToast('Invite link has been copied to the clipboard.');
     });
   };
 

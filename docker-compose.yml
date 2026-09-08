@@ -1,39 +1,21 @@
 version: '3.9'
 
 services:
-  backend:
+  # Option 1: All-in-One Deployment (Recommended for Azure)
+  # Bundles Next.js, FastAPI, and Cloudflare Tunnel in a single container.
+  app:
     build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile
-    container_name: zoom-backend
+    container_name: zoom-workplace
     ports:
       - "8000:8000"
-    volumes:
-      # Persist the SQLite database across container restarts
-      - sqlite-data:/app
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      args:
-        # Tell Next.js where the backend API is from the browser's perspective
-        NEXT_PUBLIC_API_URL: http://localhost:8000
-    container_name: zoom-frontend
-    ports:
-      - "3000:3000"
-    depends_on:
-      backend:
-        condition: service_healthy
-    restart: unless-stopped
     environment:
-      - NODE_ENV=production
+      - TUNNEL_TOKEN=${TUNNEL_TOKEN}
+      - FRONTEND_URL=${FRONTEND_URL:-https://kunalmujoo.dpdns.org}
+    volumes:
+      - sqlite-data:/app/backend
+    restart: unless-stopped
 
 volumes:
   sqlite-data:
