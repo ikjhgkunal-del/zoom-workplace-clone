@@ -29,11 +29,22 @@ app.add_middleware(
 def startup():
     init_db()
 
-# Mount API routers first (these match /meetings, /api/chat, /ws, etc.)
-app.include_router(meetings.router)
-app.include_router(participants.router)
-app.include_router(signaling.router)   # WebSocket signaling
-app.include_router(chat.router)        # Team Chat & Continuous Meeting Chat
+# Mount API routers (prefixed with /api to avoid collision with Next.js frontend pages like /meetings)
+app.include_router(meetings.router, prefix="/api")
+app.include_router(participants.router, prefix="/api")
+app.include_router(signaling.router)   # WebSocket signaling: /ws/{meeting_id}
+app.include_router(chat.router)        # Team Chat: /api/chat
+
+# Backward-compatibility: redirect non-GET /meetings API calls to /api/meetings
+from fastapi.responses import RedirectResponse
+
+@app.api_route("/meetings", methods=["POST", "PUT", "DELETE"])
+@app.api_route("/meetings/{subpath:path}", methods=["POST", "PUT", "DELETE"])
+async def legacy_meetings_api_redirect(request: Request, subpath: str = ""):
+    target_api = f"/api/meetings/{subpath}" if subpath else "/api/meetings"
+    if request.url.query:
+        target_api += f"?{request.url.query}"
+    return RedirectResponse(url=target_api, status_code=307)
 
 
 @app.get("/health")

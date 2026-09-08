@@ -1,9 +1,9 @@
 'use client';
-import { Search, ChevronLeft, ChevronRight, Clock, Sun, Moon } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import { useProfile } from '@/lib/useProfile';
 
 export default function TopBar() {
-  const { name, isDark, toggleTheme, setShowSetup } = useProfile();
+  const { name, setShowSetup } = useProfile();
 
   const displayName = name || 'User';
   const initials = displayName
@@ -41,19 +41,8 @@ export default function TopBar() {
         </div>
       </div>
 
-      {/* Right side: Theme toggle + Avatar */}
+      {/* Right side: Avatar */}
       <div className="topbar-right">
-        {/* Dark/Light Mode Toggle */}
-        <button
-          id="topbar-theme-toggle"
-          className="topbar-theme-btn"
-          onClick={toggleTheme}
-          title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-          aria-label="Toggle theme"
-        >
-          {isDark ? <Sun size={16} /> : <Moon size={16} />}
-        </button>
-
         {/* Avatar — click to edit name */}
         <div
           className="topbar-avatar"

@@ -16,44 +16,44 @@ async function apiFetch(path, options = {}) {
 
 // Meetings
 export const createInstantMeeting = (hostName = 'test one') =>
-  apiFetch(`/meetings/instant?host_name=${encodeURIComponent(hostName)}`, { method: 'POST' });
+  apiFetch(`/api/meetings/instant?host_name=${encodeURIComponent(hostName)}`, { method: 'POST' });
 
 export const scheduleMeeting = (data) =>
-  apiFetch('/meetings/schedule', { method: 'POST', body: JSON.stringify(data) });
+  apiFetch('/api/meetings/schedule', { method: 'POST', body: JSON.stringify(data) });
 
 export const getMeetings = (filter = 'all') =>
-  apiFetch(`/meetings?filter=${filter}`);
+  apiFetch(`/api/meetings?filter=${filter}`);
 
 export const getMeeting = (meetingId) =>
-  apiFetch(`/meetings/${meetingId}`);
+  apiFetch(`/api/meetings/${meetingId}`);
 
 export const updateMeetingStatus = (meetingId, status) =>
-  apiFetch(`/meetings/${meetingId}/status`, {
+  apiFetch(`/api/meetings/${meetingId}/status`, {
     method: 'PUT',
     body: JSON.stringify({ status }),
   });
 
 export const updateMeeting = (meetingId, data) =>
-  apiFetch(`/meetings/${meetingId}`, {
+  apiFetch(`/api/meetings/${meetingId}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   });
 
 export const deleteMeeting = (meetingId) =>
-  apiFetch(`/meetings/${meetingId}`, { method: 'DELETE' });
+  apiFetch(`/api/meetings/${meetingId}`, { method: 'DELETE' });
 
 // Participants
 export const joinMeeting = (meetingId, displayName, isHost = false) =>
-  apiFetch(`/meetings/${meetingId}/join`, {
+  apiFetch(`/api/meetings/${meetingId}/join`, {
     method: 'POST',
     body: JSON.stringify({ display_name: displayName, is_host: isHost }),
   });
 
 export const getParticipants = (meetingId) =>
-  apiFetch(`/meetings/${meetingId}/participants`);
+  apiFetch(`/api/meetings/${meetingId}/participants`);
 
 export const leaveMeeting = (meetingId, participantId) =>
-  apiFetch(`/meetings/${meetingId}/participants/${participantId}/leave`, { method: 'PUT' });
+  apiFetch(`/api/meetings/${meetingId}/participants/${participantId}/leave`, { method: 'PUT' });
 
 // Team Chat
 export const getChatChannels = () =>

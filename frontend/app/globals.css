@@ -52,50 +52,6 @@
 }
 
 /* =====================
-   DARK MODE THEME
-   ===================== */
-[data-theme="dark"] {
-  --app-bg: #1A1A2E;
-  --sidebar-bg: #16213E;
-  --sidebar-border: rgba(255,255,255,0.08);
-  --sidebar-icon: #A0AEC0;
-  --sidebar-icon-active: #63B3ED;
-  --sidebar-active-bg: rgba(255,255,255,0.1);
-  --topbar-bg: #16213E;
-  --dashboard-bg: #0F3460;
-  --body-bg: #1A1A2E;
-  --text-primary: #F7FAFC;
-  --text-secondary: #A0AEC0;
-  --text-muted: #718096;
-  --card-border: rgba(255,255,255,0.12);
-  --zoom-blue: #63B3ED;
-  --zoom-blue-hover: #4299E1;
-  --zoom-blue-light: rgba(99,179,237,0.15);
-}
-
-[data-theme="dark"] body { background: var(--body-bg); color: var(--text-primary); }
-[data-theme="dark"] .sidebar { background: var(--sidebar-bg); border-right: 1px solid var(--sidebar-border); }
-[data-theme="dark"] .topbar { background: var(--topbar-bg); border-bottom: 1px solid var(--sidebar-border); }
-[data-theme="dark"] .dashboard { background: var(--dashboard-bg); }
-[data-theme="dark"] .main-content { background: var(--dashboard-bg); }
-[data-theme="dark"] .right-section { background: var(--dashboard-bg); }
-[data-theme="dark"] .calendar-banner { background: rgba(99,179,237,0.1); border-color: rgba(99,179,237,0.25); }
-[data-theme="dark"] .zm-master-col,
-[data-theme="dark"] .zm-detail-col,
-[data-theme="dark"] .zm-cal-sidebar,
-[data-theme="dark"] .zm-agenda-col { background: rgba(255,255,255,0.04); }
-[data-theme="dark"] .schedule-card,
-[data-theme="dark"] .schedule-success-card { background: #0F3460; border-color: rgba(255,255,255,0.12); }
-[data-theme="dark"] .schedule-input,
-[data-theme="dark"] .schedule-textarea,
-[data-theme="dark"] .schedule-select { background: rgba(255,255,255,0.08); color: var(--text-primary); border-color: rgba(255,255,255,0.2); }
-[data-theme="dark"] .clock-time { color: var(--text-primary); }
-[data-theme="dark"] .clock-date { color: var(--text-secondary); }
-[data-theme="dark"] .topbar-search-inner { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
-[data-theme="dark"] .topbar-search-inner input { color: var(--text-primary); }
-[data-theme="dark"] .topbar-search-inner input::placeholder { color: var(--text-muted); }
-
-/* =====================
    RESET
    ===================== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -106,32 +62,10 @@ html, body {
   color: var(--text-primary);
   background: var(--body-bg);
   -webkit-font-smoothing: antialiased;
-  transition: background 0.3s ease, color 0.3s ease;
 }
 a { text-decoration: none; color: inherit; }
 button { cursor: pointer; border: none; background: none; font-family: var(--font); }
 input, textarea, select { font-family: var(--font); }
-
-/* =====================
-   THEME TOGGLE BUTTON
-   ===================== */
-.topbar-theme-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  border: 1px solid rgba(0,0,0,0.1);
-  background: transparent;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-right: 6px;
-}
-.topbar-theme-btn:hover { background: rgba(0,0,0,0.08); color: var(--text-primary); }
-[data-theme="dark"] .topbar-theme-btn { border-color: rgba(255,255,255,0.15); color: var(--text-secondary); }
-[data-theme="dark"] .topbar-theme-btn:hover { background: rgba(255,255,255,0.1); color: var(--text-primary); }
 
 /* =====================
    TOAST NOTIFICATION SYSTEM
@@ -176,12 +110,7 @@ input, textarea, select { font-family: var(--font); }
 }
 .toast-close:hover { background: rgba(0,0,0,0.08); color: #18191C; }
 
-[data-theme="dark"] .toast-item {
-  background: #1E2D4A;
-  color: #F7FAFC;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-}
-[data-theme="dark"] .toast-close:hover { background: rgba(255,255,255,0.1); color: #F7FAFC; }
+
 
 @keyframes toast-slide-in {
   from { opacity: 0; transform: translateX(100%) scale(0.85); }
